@@ -18,6 +18,11 @@ double particle::getY() const {
     return y;
 }
 
+double particle::getMass() const {
+    return mass;
+}
+
+
 void particle::setX(double x) {
     this->x = x;
 }
@@ -36,6 +41,11 @@ string particle::toString() const {
     return oss.str();
 }
 
-double particle::getInfluence(double radius, double dst) {
-    return pow(max(0.0, radius - dst), 3);
+double particle::getInfluence(double max_radius, double dst) {
+    return pow(max(max_radius - dst, 0.0), 3);
 }
+
+double particle::getDistance(double x, double y) const {
+    return sqrt(pow(x - this->x, 2) + pow(y - this->y, 2));
+}
+
