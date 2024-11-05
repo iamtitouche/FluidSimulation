@@ -1,56 +1,79 @@
-#include <opencv2/opencv.hpp>
-#include <iostream>
+#include <QApplication>
+#include <QWidget>
+#include <QPainter>
+#include <QImage>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
-#include "space2D.hpp"
+#include <cmath>
+#include <iostream>
+#include <ostream>
 
-int main() {
+#include "headers/space2D.hpp"
+#include "headers/utils.hpp"
+
+class HeatmapWidget : public QWidget {
+public:
+    HeatmapWidget(const QImage &image, QWidget *parent = nullptr) 
+        : QWidget(parent), heatmapImage(image) {
+        setFixedSize(heatmapImage.size());
+    }
+
+protected:
+    void paintEvent(QPaintEvent *) override {
+        QPainter painter(this);
+        painter.drawImage(0, 0, heatmapImage);
+    }
+
+private:
+    QImage heatmapImage;
+};
+
+
+int main(int argc, char *argv[]) {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-    const int width = 200;
-    const int height = 200;
+    int width = 1000;
+    int height = 500;
+    const double infl_radius = 75.0;
 
-    space2D space((double) width, (double) height);
+    space2D space(static_cast<double>(width), static_cast<double>(height), infl_radius);
 
-    space.randomInitParticles(10000);
+    space.randomInitParticles(400);
+    space.sortParticles();
 
-    const double infl_radius = 10.0;
-    const double max_density = pow(infl_radius, 3.0);
-    cv::Mat image(height, width, CV_8UC3, cv::Scalar(255, 255, 255));
+    cout << space.toString() << endl;
 
+
+    // Initialize Qt application
+    QApplication app(argc, argv);
+
+    // Create an image to draw on
+    QImage image(width, height, QImage::Format_RGB32);
+    const double max_density = 2  / (M_PI * infl_radius);
+
+    // Generate the heatmap
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
-            double density = space.getDensity(x, y, infl_radius);
-            std::cout << density << std::endl;
+            double density = space.getDensity(x, y);
 
-            // Normaliser la densité entre 0 et 1
-            double normalized_density = density / max_density;
+            // Normalize density between 0 and 1
+            double normalized_density = std::min(1.0, density / max_density);
 
-            // Limiter la normalisation entre 0 et 1
-            if (normalized_density < 0) normalized_density = 0;
-            if (normalized_density > 1) normalized_density = 1;
+            // Clamp normalized density between 0 and 1
+            normalized_density = std::max(0.0, normalized_density);
 
-            // Calculer la couleur correspondante
-            cv::Vec3b color; // BGR format
-            color[0] = 0; // Blue channel
-            color[1] = 0; // Green channel
-            color[2] = static_cast<uchar>(255 * normalized_density); // Red channel
-
-            // Affecter la couleur à l'image
-            image.at<cv::Vec3b>(y, x) = color;
+            // Calculate the color corresponding
+            QRgb color = qRgb(0, 0, static_cast<int>(255 * normalized_density));
+            image.setPixel(x, y, color);
         }
     }
 
+    // Create and show the heatmap widget
+    HeatmapWidget heatmapWidget(image);
+    heatmapWidget.setWindowTitle("Heatmap de la Densité");
+    heatmapWidget.show();
 
-    // Afficher l'image
-    cv::imshow("Heatmap de la Densité", image);
-
-    // Attendre que l'utilisateur appuie sur une touche
-    cv::waitKey(0);
-
-
-    cv::destroyAllWindows();
-
-    return 0;
+    // Start the application event loop
+    return app.exec();
 }

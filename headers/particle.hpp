@@ -8,18 +8,22 @@ using namespace std;
 class particle {
 public:
     particle(double x, double y);
-    double getX() const;
-    double getY() const;
-    double getMass() const;
+    [[nodiscard]] double getX() const;
+    [[nodiscard]] double getY() const;
+    [[nodiscard]] double getMass() const;
     void setX(double x);
     void setY(double y);
-    double getDistance(double x, double y) const;
-    string toString() const;
+    [[nodiscard]] double getDistance(double x, double y) const;
+    [[nodiscard]] string toString() const;
 
     static double getInfluence(double x, double y);
+    void setZone(int zone);
+    [[nodiscard]] double getZone() const;
+
 private:
     double x;
     double y;
+    int zone = -1;
     const double mass = 1.0;
 };
 

@@ -3,8 +3,10 @@
 #include <vector>
 #include <sstream>
 #include <cmath>
+#include <QDebug>
 
-#include "particle.hpp"
+#include "../headers/particle.hpp"
+
 
 using namespace std;
 
@@ -22,7 +24,6 @@ double particle::getMass() const {
     return mass;
 }
 
-
 void particle::setX(double x) {
     this->x = x;
 }
@@ -34,9 +35,9 @@ void particle::setY(double y) {
 string particle::toString() const {
     ostringstream oss;
 
-    oss << "Particle:" << std::endl;
-    oss << "  x: " << x << std::endl;
-    oss << "  y: " << y << std::endl;
+    oss << "Particle :" << std::endl;
+    oss << "  x : " << x << std::endl;
+    oss << "  y : " << y << std::endl;
 
     return oss.str();
 }
@@ -47,5 +48,13 @@ double particle::getInfluence(double max_radius, double dst) {
 
 double particle::getDistance(double x, double y) const {
     return sqrt(pow(x - this->x, 2) + pow(y - this->y, 2));
+}
+
+void particle::setZone(int zone) {
+    this->zone = zone;
+}
+
+double particle::getZone() const {
+  return zone;
 }
 
